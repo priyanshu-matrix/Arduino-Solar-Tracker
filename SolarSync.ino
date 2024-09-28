@@ -1,27 +1,77 @@
-#include <Servo.h>  
-Servo myServo;      
-int ldrPin = A0;    //using A0 when analog pin goes to A0th port.
-int servoPin = 9;   //using 9 when signal pin goes in 9th port.
+#include <Servo.h>
+
+
+Servo horizontalServo;
+Servo verticalServo;
+
+
+int ldrTopLeft = A0;
+int ldrTopRight = A1;
+int ldrBottomLeft = A2;
+int ldrBottomRight = A3;
+
+
+int horizontalServoPin = 9;
+int verticalServoPin = 10;
+
+
+int threshold = 50;  
+int horizontalPosition = 90;  
+int verticalPosition = 90;    
 
 void setup() {
-  myServo.attach(servoPin);  
-  Serial.begin(9600);        
+  
+  horizontalServo.attach(horizontalServoPin);
+  verticalServo.attach(verticalServoPin);
+
+  
+  horizontalServo.write(horizontalPosition);
+  verticalServo.write(verticalPosition);
+  
+  Serial.begin(9600);  
 }
 
 void loop() {
-  int ldrValue = analogRead(ldrPin);  
   
+  int topLeft = analogRead(ldrTopLeft);
+  int topRight = analogRead(ldrTopRight);
+  int bottomLeft = analogRead(ldrBottomLeft);
+  int bottomRight = analogRead(ldrBottomRight);
+  
+  
+  int avgTop = (topLeft + topRight) / 2;
+  int avgBottom = (bottomLeft + bottomRight) / 2;
+  int avgLeft = (topLeft + bottomLeft) / 2;
+  int avgRight = (topRight + bottomRight) / 2;
+
+  
+  if (abs(avgLeft - avgRight) > threshold) {  
+      horizontalPosition = constrain(horizontalPosition - 1, 0, 180);  
+    } else {
+      horizontalPosition = constrain(horizontalPosition + 1, 0, 180); 
+    }
+  }
+
+  
+  if (abs(avgTop - avgBottom) > threshold) {  
+    if (avgTop > avgBottom) {
+      verticalPosition = constrain(verticalPosition + 1, 0, 180);  
+    } else {
+      verticalPosition = constrain(verticalPosition - 1, 0, 180);  
+    }
+  }
+
+  
+  horizontalServo.write(horizontalPosition);
+  verticalServo.write(verticalPosition);
+
  
-  int servoAngle = map(ldrValue, 0, 1023, 0, 180);
+  Serial.print("LDR TL: "); Serial.print(topLeft);
+  Serial.print(" | TR: "); Serial.print(topRight);
+  Serial.print(" | BL: "); Serial.print(bottomLeft);
+  Serial.print(" | BR: "); Serial.println(bottomRight);
+  Serial.print("Horizontal Position: "); Serial.print(horizontalPosition);
+  Serial.print(" | Vertical Position: "); Serial.println(verticalPosition);
 
-  
-  Serial.print("LDR Value: ");
-  Serial.print(ldrValue);
-  Serial.print(" => Servo Angle: ");
-  Serial.println(servoAngle);
-
-  
-  myServo.write(servoAngle);
-
-  delay(50);  
+  delay(1000);  
 }
