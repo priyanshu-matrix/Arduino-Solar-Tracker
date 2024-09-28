@@ -1,7 +1,7 @@
 #include <Servo.h>  
 Servo myServo;      
-int ldrPin = A0;    
-int servoPin = 9;   
+int ldrPin = A0;    //using A0 when analog pin goes to A0th port.
+int servoPin = 9;   //using 9 when signal pin goes in 9th port.
 
 void setup() {
   myServo.attach(servoPin);  
