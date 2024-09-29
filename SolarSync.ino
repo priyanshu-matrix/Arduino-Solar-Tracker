@@ -1,77 +1,84 @@
 #include <Servo.h>
 
+Servo horizontalServo;  //Lower Motor
+Servo verticalServo;    //Upper Motor
 
-Servo horizontalServo;
-Servo verticalServo;
+int horizontalPosition = 90;
+int verticalPosition = 90;
+int rotateSpeed = 3;
+int upperMotorMax = 140;
+int lowerMotorMax = 180;
 
-
-int ldrTopLeft = A0;
-int ldrTopRight = A1;
-int ldrBottomLeft = A2;
-int ldrBottomRight = A3;
-
-
-int horizontalServoPin = 9;
-int verticalServoPin = 10;
-
-
-int threshold = 50;  
-int horizontalPosition = 90;  
-int verticalPosition = 90;    
+int threshold = 50;
 
 void setup() {
-  
-  horizontalServo.attach(horizontalServoPin);
-  verticalServo.attach(verticalServoPin);
+  horizontalServo.attach(2);
+  verticalServo.attach(3);
 
-  
-  horizontalServo.write(horizontalPosition);
-  verticalServo.write(verticalPosition);
-  
-  Serial.begin(9600);  
+  Serial.begin(9600);
 }
 
 void loop() {
-  
-  int topLeft = analogRead(ldrTopLeft);
-  int topRight = analogRead(ldrTopRight);
-  int bottomLeft = analogRead(ldrBottomLeft);
-  int bottomRight = analogRead(ldrBottomRight);
-  
-  
+  int bottomRight = analogRead(A0);
+  int bottomLeft = analogRead(A1);
+  int topLeft = analogRead(A2);
+  int topRight = analogRead(A3);
+
   int avgTop = (topLeft + topRight) / 2;
   int avgBottom = (bottomLeft + bottomRight) / 2;
   int avgLeft = (topLeft + bottomLeft) / 2;
   int avgRight = (topRight + bottomRight) / 2;
 
-  
-  if (abs(avgLeft - avgRight) > threshold) {  
-      horizontalPosition = constrain(horizontalPosition - 1, 0, 180);  
+  int previousHorizontal = horizontalPosition;
+  int previousVertical = verticalPosition;
+
+  if (abs(avgLeft - avgRight) > threshold) {
+    if (avgLeft > avgRight) {
+      horizontalPosition = constrain(horizontalPosition - rotateSpeed, 0, lowerMotorMax);
     } else {
-      horizontalPosition = constrain(horizontalPosition + 1, 0, 180); 
+      horizontalPosition = constrain(horizontalPosition + rotateSpeed, 0, lowerMotorMax);
     }
   }
 
-  
-  if (abs(avgTop - avgBottom) > threshold) {  
+
+  if (abs(avgTop - avgBottom) > threshold) {
     if (avgTop > avgBottom) {
-      verticalPosition = constrain(verticalPosition + 1, 0, 180);  
+      verticalPosition = constrain(verticalPosition + rotateSpeed, 0, upperMotorMax);
     } else {
-      verticalPosition = constrain(verticalPosition - 1, 0, 180);  
+      verticalPosition = constrain(verticalPosition - rotateSpeed, 0, upperMotorMax);
     }
   }
 
-  
-  horizontalServo.write(horizontalPosition);
-  verticalServo.write(verticalPosition);
+  while (previousHorizontal < horizontalPosition) {
+    previousHorizontal++;
+    horizontalServo.write(previousHorizontal);
+  }
+  while (previousHorizontal > horizontalPosition) {
+    previousHorizontal--;
+    horizontalServo.write(previousHorizontal);
+  }
 
- 
-  Serial.print("LDR TL: "); Serial.print(topLeft);
-  Serial.print(" | TR: "); Serial.print(topRight);
-  Serial.print(" | BL: "); Serial.print(bottomLeft);
-  Serial.print(" | BR: "); Serial.println(bottomRight);
-  Serial.print("Horizontal Position: "); Serial.print(horizontalPosition);
-  Serial.print(" | Vertical Position: "); Serial.println(verticalPosition);
+  while (previousVertical < verticalPosition) {
+    previousVertical++;
+    verticalServo.write(previousVertical);
+  }
+  while (previousVertical > verticalPosition) {
+    previousVertical--;
+    verticalServo.write(previousVertical);
+  }
 
-  delay(1000);  
+  Serial.print("LDR TL: ");
+  Serial.print(topLeft);
+  Serial.print(" | TR: ");
+  Serial.print(topRight);
+  Serial.print(" | BL: ");
+  Serial.print(bottomLeft);
+  Serial.print(" | BR: ");
+  Serial.println(bottomRight);
+  Serial.print("Horizontal Position: ");
+  Serial.print(horizontalPosition);
+  Serial.print(" | Vertical Position: ");
+  Serial.println(verticalPosition);
+
+  // delay(50); If We want the apparatus to move slow
 }
