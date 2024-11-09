@@ -14,6 +14,7 @@ int threshold = 50;
 void setup() {
   horizontalServo.attach(2);
   verticalServo.attach(3);
+  pinMode(8,OUTPUT);
 
   Serial.begin(9600);
 }
@@ -48,23 +49,28 @@ void loop() {
       verticalPosition = constrain(verticalPosition - rotateSpeed, 0, upperMotorMax);
     }
   }
-
+  digitalWrite(8,HIGH);
   while (previousHorizontal < horizontalPosition) {
     previousHorizontal++;
     horizontalServo.write(previousHorizontal);
+    digitalWrite(8,LOW);
+
   }
   while (previousHorizontal > horizontalPosition) {
     previousHorizontal--;
     horizontalServo.write(previousHorizontal);
+    digitalWrite(8,LOW);
   }
 
   while (previousVertical < verticalPosition) {
     previousVertical++;
     verticalServo.write(previousVertical);
+    digitalWrite(8,LOW);
   }
   while (previousVertical > verticalPosition) {
     previousVertical--;
     verticalServo.write(previousVertical);
+    digitalWrite(8,LOW);
   }
 
   Serial.print("LDR TL: ");
@@ -80,5 +86,5 @@ void loop() {
   Serial.print(" | Vertical Position: ");
   Serial.println(verticalPosition);
 
-  // delay(50); If We want the apparatus to move slow
+  delay(0);  
 }
